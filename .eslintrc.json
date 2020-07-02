@@ -39,6 +39,9 @@
         ]
       }
     ],
+    "react/jsx-one-expression-per-line": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/prop-types": "off",
     "import/prefer-default-export": "off",
     "import/extensions": [
       "error",
@@ -49,8 +52,7 @@
       }
     ],
     "prettier/prettier": "error",
-    "camelcase": "off",
-    "react/jsx-one-expression-per-line": "off"
+    "camelcase": "off"
   },
   "settings": {
     "import/resolver": {
