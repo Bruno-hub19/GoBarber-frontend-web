@@ -1,42 +1,30 @@
 import React from 'react';
-import { FiAlertCircle, FiXCircle } from 'react-icons/fi';
+import { useTransition } from 'react-spring';
 
-import { Container, Toast } from './styles';
+import Toast from './Toast';
+import { ToastMessage } from '../../hooks/toast';
+import { Container } from './styles';
 
-const ToastContainer: React.FC = () => {
+interface ToastContainerProps {
+  messages: ToastMessage[];
+}
+
+const ToastContainer: React.FC<ToastContainerProps> = ({ messages }) => {
+  const messagesWithTransition = useTransition(
+    messages,
+    message => message.id,
+    {
+      from: { right: '-120%', opacity: 0 },
+      enter: { right: '0%', opacity: 1 },
+      leave: { right: '-120%' },
+    },
+  );
+
   return (
     <Container>
-      <Toast hasDesription>
-        <FiAlertCircle size={20} />
-        <div>
-          <strong>Atenção</strong>
-          <p>Você já fez o agendamento</p>
-        </div>
-        <button type="button">
-          <FiXCircle size={18} />
-        </button>
-      </Toast>
-
-      <Toast type="success" hasDesription={false}>
-        <FiAlertCircle size={20} />
-        <div>
-          <strong>Agendamento concluído!</strong>
-        </div>
-        <button type="button">
-          <FiXCircle size={18} />
-        </button>
-      </Toast>
-
-      <Toast type="error" hasDesription>
-        <FiAlertCircle size={20} />
-        <div>
-          <strong>Aconteceu um erro</strong>
-          <p>Não foi possível realizar o login</p>
-        </div>
-        <button type="button">
-          <FiXCircle size={18} />
-        </button>
-      </Toast>
+      {messagesWithTransition.map(({ item, key, props }) => (
+        <Toast key={key} message={item} style={props} />
+      ))}
     </Container>
   );
 };
