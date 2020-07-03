@@ -6,14 +6,14 @@ interface AuthState {
   token: string;
   user: object;
 }
-interface SingInCredentials {
+interface SignInCredentials {
   email: string;
   password: string;
 }
 interface AuthContextFormat {
   user: object;
-  signIn(credentials: SingInCredentials): Promise<void>;
-  singOut(): void;
+  signIn(credentials: SignInCredentials): Promise<void>;
+  signOut(): void;
 }
 
 const AuthContext = createContext<AuthContextFormat>({} as AuthContextFormat);
@@ -45,7 +45,7 @@ export const AuthProvider: React.FC = ({ children }) => {
     }
   }, []);
 
-  const singOut = useCallback(() => {
+  const signOut = useCallback(() => {
     localStorage.removeItem('@GoBarber:token');
     localStorage.removeItem('@GoBarber:user');
 
@@ -53,7 +53,7 @@ export const AuthProvider: React.FC = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user: data.user, signIn, singOut }}>
+    <AuthContext.Provider value={{ user: data.user, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
