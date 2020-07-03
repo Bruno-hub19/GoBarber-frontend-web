@@ -4,7 +4,6 @@ import api from '../services/api';
 
 interface AuthState {
   token: string;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   user: object;
 }
 interface SingInCredentials {
@@ -12,9 +11,9 @@ interface SingInCredentials {
   password: string;
 }
 interface AuthContextFormat {
-  // eslint-disable-next-line @typescript-eslint/ban-types
   user: object;
   signIn(credentials: SingInCredentials): Promise<void>;
+  singOut(): void;
 }
 
 const AuthContext = createContext<AuthContextFormat>({} as AuthContextFormat);
@@ -46,8 +45,15 @@ export const AuthProvider: React.FC = ({ children }) => {
     }
   }, []);
 
+  const singOut = useCallback(() => {
+    localStorage.removeItem('@GoBarber:token');
+    localStorage.removeItem('@GoBarber:user');
+
+    setData({} as AuthState);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user: data.user, signIn }}>
+    <AuthContext.Provider value={{ user: data.user, signIn, singOut }}>
       {children}
     </AuthContext.Provider>
   );
