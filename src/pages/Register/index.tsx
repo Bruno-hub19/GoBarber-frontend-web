@@ -1,4 +1,5 @@
 import React, { useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
@@ -8,7 +9,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import getValidationErrors from '../../utils/getValidationErrors';
 import logoSvg from '../../assets/logo.svg';
-import { Container, Content, Background } from './styles';
+import { Container, Content, AnimatedContainer, Background } from './styles';
 
 const Register: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
@@ -39,24 +40,26 @@ const Register: React.FC = () => {
     <Container>
       <Background />
       <Content>
-        <img src={logoSvg} alt="GoBaber logo" />
+        <AnimatedContainer>
+          <img src={logoSvg} alt="GoBaber logo" />
 
-        <Form ref={formRef} onSubmit={handleSubmit}>
-          <h1>Faça seu Cadastro</h1>
-          <Input icon={FiUser} name="name" placeholder="Nome" />
-          <Input icon={FiMail} name="email" placeholder="E-mail" />
-          <Input
-            icon={FiLock}
-            name="password"
-            type="password"
-            placeholder="Senha"
-          />
-          <Button type="submit">Cadastrar</Button>
-        </Form>
+          <Form ref={formRef} onSubmit={handleSubmit}>
+            <h1>Faça seu Cadastro</h1>
+            <Input icon={FiUser} name="name" placeholder="Nome" />
+            <Input icon={FiMail} name="email" placeholder="E-mail" />
+            <Input
+              icon={FiLock}
+              name="password"
+              type="password"
+              placeholder="Senha"
+            />
+            <Button type="submit">Cadastrar</Button>
+          </Form>
 
-        <a href="/login">
-          <FiArrowLeft size={16} /> Voltar para logon
-        </a>
+          <Link to="/">
+            <FiArrowLeft size={16} /> Voltar para logon
+          </Link>
+        </AnimatedContainer>
       </Content>
     </Container>
   );
