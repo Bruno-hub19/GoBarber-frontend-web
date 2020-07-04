@@ -7,7 +7,7 @@ export interface ToastMessage {
   id: string;
   type?: 'success' | 'error' | 'info';
   title: string;
-  description: string;
+  description?: string;
 }
 interface ToastContextFormat {
   addToast(message: Omit<ToastMessage, 'id'>): void;
