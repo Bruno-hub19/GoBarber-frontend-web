@@ -1,10 +1,11 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import * as Yup from 'yup';
 import { FiLogIn, FiMail } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 
+import api from '../../services/api';
 import { useToast } from '../../hooks/toast';
 import getValidationErrors from '../../utils/getValidationErrors';
 import Button from '../../components/Button';
@@ -18,6 +19,7 @@ interface ForgotPasswordFormData {
 
 const ForgotPassword: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const [loading, setLoading] = useState(false);
 
   const history = useHistory();
   const { addToast } = useToast();
@@ -25,6 +27,8 @@ const ForgotPassword: React.FC = () => {
   const handleSubmit = useCallback(
     async (data: ForgotPasswordFormData) => {
       try {
+        setLoading(true);
+
         formRef.current?.setErrors({});
 
         const schema = Yup.object().shape({
@@ -37,7 +41,14 @@ const ForgotPassword: React.FC = () => {
           abortEarly: false,
         });
 
-        // Recuperar senha
+        await api.post('/password/forgot', { email: data.email });
+
+        addToast({
+          type: 'success',
+          title: 'Sucesso',
+          description:
+            'Verifique a caixa de entrada do e-mail informado e siga as instruções',
+        });
 
         // history.push('/dashboard');
       } catch (err) {
@@ -54,6 +65,8 @@ const ForgotPassword: React.FC = () => {
           title: 'Erro ao recuperar senha',
           description: 'Tente novamente',
         });
+      } finally {
+        setLoading(false);
       }
     },
     [addToast],
@@ -75,7 +88,9 @@ const ForgotPassword: React.FC = () => {
               placeholder="E-mail"
             />
 
-            <Button type="submit">Recuperar</Button>
+            <Button loading={loading} type="submit">
+              Recuperar
+            </Button>
           </Form>
 
           <Link to="/">
