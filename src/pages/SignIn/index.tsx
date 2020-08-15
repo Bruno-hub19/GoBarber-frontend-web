@@ -22,7 +22,7 @@ const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
 
   const history = useHistory();
-  const { signIn, user } = useAuth();
+  const { signIn } = useAuth();
   const { addToast } = useToast();
 
   const handleSubmit = useCallback(
@@ -87,7 +87,7 @@ const SignIn: React.FC = () => {
               placeholder="Senha"
             />
             <Button type="submit">Entrar</Button>
-            <a href="/forgot-password">Esqueci minha senha</a>
+            <Link to="/forgot-password">Esqueci minha senha</Link>
           </Form>
 
           <Link to="/register">
