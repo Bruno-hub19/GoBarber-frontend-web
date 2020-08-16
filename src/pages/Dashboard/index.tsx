@@ -1,10 +1,13 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { FiPower, FiClock } from 'react-icons/fi';
+import { isToday, format, parseISO } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 import DayPicker, { DayModifiers } from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
 import api from '../../services/api';
 import { useAuth } from '../../hooks/auth';
+import defaultAvatar from '../../assets/default-avatar.png';
 import logoImg from '../../assets/logo.svg';
 import {
   Container,
@@ -24,12 +27,23 @@ interface MonthAvailabilityItem {
   available: boolean;
 }
 
+interface AppointmentsState {
+  id: string;
+  date: string;
+  formattedHour: string;
+  user: {
+    name: string;
+    avatar_url: string;
+  };
+}
+
 const Dashboard: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [monthAvailability, setMonthAvailability] = useState<
     MonthAvailabilityItem[]
   >([]);
+  const [appointments, setAppointments] = useState<AppointmentsState[]>([]);
 
   const { signOut, user } = useAuth();
 
@@ -56,6 +70,27 @@ const Dashboard: React.FC = () => {
       });
   }, [currentMonth, user.id]);
 
+  useEffect(() => {
+    api
+      .get<AppointmentsState[]>('/appointment/me', {
+        params: {
+          year: selectedDate.getFullYear(),
+          month: selectedDate.getMonth() + 1,
+          day: selectedDate.getDate(),
+        },
+      })
+      .then(response => {
+        const appointmentsFormatted = response.data.map(eachAppointment => {
+          return {
+            ...eachAppointment,
+            formattedHour: format(parseISO(eachAppointment.date), 'HH:mm'),
+          };
+        });
+
+        setAppointments(appointmentsFormatted);
+      });
+  }, [selectedDate]);
+
   const disabledDays = useMemo(() => {
     const dates = monthAvailability
       .filter(monthDay => monthDay.available === false)
@@ -69,6 +104,28 @@ const Dashboard: React.FC = () => {
     return dates;
   }, [currentMonth, monthAvailability]);
 
+  const selectedDateAsText = useMemo(() => {
+    return format(selectedDate, "'Dia' dd 'de' MMMM ", {
+      locale: ptBR,
+    });
+  }, [selectedDate]);
+
+  const selectedWeekDay = useMemo(() => {
+    return format(selectedDate, 'cccc', { locale: ptBR });
+  }, [selectedDate]);
+
+  const morningAppointments = useMemo(() => {
+    return appointments.filter(eachAppointment => {
+      return parseISO(eachAppointment.date).getHours() < 12;
+    });
+  }, [appointments]);
+
+  const afternoonAppointments = useMemo(() => {
+    return appointments.filter(eachAppointment => {
+      return parseISO(eachAppointment.date).getHours() >= 12;
+    });
+  }, [appointments]);
+
   return (
     <Container>
       <Header>
@@ -76,7 +133,7 @@ const Dashboard: React.FC = () => {
           <img src={logoImg} alt="GoBarber logo" />
 
           <Profile>
-            <img src={user.avatar_url} alt={user.name} />
+            <img src={user.avatar_url || defaultAvatar} alt={user.name} />
 
             <div>
               <span>Bem-vindo,</span>
@@ -94,9 +151,9 @@ const Dashboard: React.FC = () => {
         <Schedule>
           <h1>Horários agendados</h1>
           <p>
-            <span>Hoje</span>
-            <span>dia 15</span>
-            <span>Sábado</span>
+            {isToday(selectedDate) && <span>Hoje</span>}
+            <span>{selectedDateAsText}</span>
+            <span>{selectedWeekDay}</span>
           </p>
 
           <NextAppointment>
@@ -118,57 +175,45 @@ const Dashboard: React.FC = () => {
           <Section>
             <strong>Manhã</strong>
 
-            <Appointment>
-              <span>
-                <FiClock size={16} />
-                09:00
-              </span>
+            {morningAppointments.map(eachAppointment => (
+              <Appointment key={eachAppointment.id}>
+                <span>
+                  <FiClock size={16} />
+                  {eachAppointment.formattedHour}
+                </span>
 
-              <div>
-                <img
-                  src="https://avatars2.githubusercontent.com/u/53710044?s=460&u=a892198f1f9c932c89f616e0653290499afd9944&v=4"
-                  alt="Bruno Nascimento"
-                />
+                <div>
+                  <img
+                    src={eachAppointment.user.avatar_url || defaultAvatar}
+                    alt={eachAppointment.user.name}
+                  />
 
-                <strong>Bruno Nascimento</strong>
-              </div>
-            </Appointment>
-
-            <Appointment>
-              <span>
-                <FiClock size={16} />
-                10:00
-              </span>
-
-              <div>
-                <img
-                  src="https://avatars2.githubusercontent.com/u/53710044?s=460&u=a892198f1f9c932c89f616e0653290499afd9944&v=4"
-                  alt="Bruno Nascimento"
-                />
-
-                <strong>Bruno Nascimento</strong>
-              </div>
-            </Appointment>
+                  <strong>{eachAppointment.user.name}</strong>
+                </div>
+              </Appointment>
+            ))}
           </Section>
 
           <Section>
             <strong>Tarde</strong>
 
-            <Appointment>
-              <span>
-                <FiClock size={16} />
-                13:00
-              </span>
+            {afternoonAppointments.map(eachAppointment => (
+              <Appointment key={eachAppointment.id}>
+                <span>
+                  <FiClock size={16} />
+                  {eachAppointment.formattedHour}
+                </span>
 
-              <div>
-                <img
-                  src="https://avatars2.githubusercontent.com/u/53710044?s=460&u=a892198f1f9c932c89f616e0653290499afd9944&v=4"
-                  alt="Bruno Nascimento"
-                />
+                <div>
+                  <img
+                    src={eachAppointment.user.avatar_url || defaultAvatar}
+                    alt={eachAppointment.user.name}
+                  />
 
-                <strong>Bruno Nascimento</strong>
-              </div>
-            </Appointment>
+                  <strong>{eachAppointment.user.name}</strong>
+                </div>
+              </Appointment>
+            ))}
           </Section>
         </Schedule>
 
